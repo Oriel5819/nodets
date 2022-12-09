@@ -11,6 +11,7 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "passport";
 import { Users } from "./models/userModel";
+import "./strategies/local";
 
 import { userRoute } from "./routes/userRoute";
 import { operationRoute } from "./routes/operationRoute";
@@ -43,7 +44,7 @@ app.use(passport.session());
 // passport.use(Users.createStrategy());
 
 // ROUTES
-app.use("/", (request: Request, response: Response) => response.render("index"));
+// app.use("/", (request: Request, response: Response) => response.render("index"));
 app.use("/users", userRoute);
 app.use("/operations", operationRoute);
 app.use("/accounts", accountStatusRoute);

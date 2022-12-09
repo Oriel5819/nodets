@@ -14,6 +14,7 @@ const consola_1 = __importDefault(require("consola"));
 const express_session_1 = __importDefault(require("express-session"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const passport_1 = __importDefault(require("passport"));
+require("./strategies/local");
 const userRoute_1 = require("./routes/userRoute");
 const operationRoute_1 = require("./routes/operationRoute");
 const accountStatusRoute_1 = require("./routes/accountStatusRoute");
@@ -24,8 +25,6 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)({ origin: "http://localhost:3000", credentials: true }));
 app.use((0, express_session_1.default)({ secret: "mysecret", resave: true, saveUninitialized: true }));
 app.use((0, cookie_parser_1.default)());
-app.use(passport_1.default.initialize());
-app.use(passport_1.default.session());
 app.use((0, helmet_1.default)());
 app.use((0, morgan_1.default)("tiny"));
 // STATIC
@@ -35,8 +34,12 @@ app.use(express_1.default.static((0, path_1.join)(__dirname, "../", "public")));
 app.set("view engine", "ejs");
 // CONNECT TO MONGODB
 (0, mongodbConnect_1.mongodbConnect)(constant_1.MONGO_URI !== null && constant_1.MONGO_URI !== void 0 ? constant_1.MONGO_URI : "");
+// PASSPORT
+app.use(passport_1.default.initialize());
+app.use(passport_1.default.session());
+// passport.use(Users.createStrategy());
 // ROUTES
-app.use("/", (request, response) => response.render("index"));
+// app.use("/", (request: Request, response: Response) => response.render("index"));
 app.use("/users", userRoute_1.userRoute);
 app.use("/operations", operationRoute_1.operationRoute);
 app.use("/accounts", accountStatusRoute_1.accountStatusRoute);

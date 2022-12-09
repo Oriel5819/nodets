@@ -1,5 +1,5 @@
 import { ICredential, ILogin, IResendCode, IResetPassword, IVerification } from "../interfaces";
-import { Users } from "../models/userModel";
+import { comparePassword, Users } from "../models/userModel";
 
 const registerService = async ({ email, password, confirmPassword }: ICredential): Promise<{ statusCode: number; message: string }> => {
   if (!email) return { statusCode: 400, message: "Email is required" };
@@ -71,7 +71,13 @@ const resetPasswordService = async ({ email, resetCode, password, confirmPasswor
   } else return { statusCode: 400, message: "Error occured while resetting password" };
 };
 
-const loginService = async ({ email, password }: ILogin) => {};
+const loginService = async ({ email, password }: ILogin) => {
+  if (!email) return { statusCode: 400, message: "Email is required" };
+
+  const foundUser = await Users.findOne({ email, isVerified: true, verificationCode: null });
+  if (foundUser && (await comparePassword(password, foundUser.password as string))) return foundUser;
+  else return { message: "Invalid email or password" };
+};
 
 const logoutService = async () => {};
 

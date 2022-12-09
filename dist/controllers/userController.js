@@ -47,6 +47,7 @@ exports.login = login;
 const logout = (request, response) => __awaiter(void 0, void 0, void 0, function* () { });
 exports.logout = logout;
 const profile = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('logged in');
     response.status(200).send("profile");
 });
 exports.profile = profile;

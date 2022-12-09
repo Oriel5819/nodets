@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userRoute = void 0;
 const express_1 = require("express");
+const passport_1 = __importDefault(require("passport"));
 const userController_1 = require("../controllers/userController");
 const userRoute = (0, express_1.Router)();
 exports.userRoute = userRoute;
@@ -11,7 +15,7 @@ userRoute.post("/register", userController_1.register);
 userRoute.post("/verify-code", userController_1.verifyCode);
 userRoute.post("/resend-code", userController_1.resendCode);
 userRoute.post("/reset-password", userController_1.resetPassword);
-userRoute.post("/login", userController_1.login);
+userRoute.post("/login", passport_1.default.authenticate("local"), userController_1.login);
 userRoute.post("/logout", userController_1.logout);
 userRoute.post("/edit-profile", userController_1.editProfile);
 userRoute.post("/edit-password", userController_1.editPassword);

@@ -37,6 +37,7 @@ const login = async (request: Request, response: Response) => {
 const logout = async (request: Request, response: Response) => {};
 
 const profile = async (request: Request, response: Response) => {
+  console.log('logged in');
   response.status(200).send("profile");
 };
 
