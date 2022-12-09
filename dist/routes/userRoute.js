@@ -7,7 +7,7 @@ const userRoute = (0, express_1.Router)();
 exports.userRoute = userRoute;
 userRoute.get("/", userController_1.welcome);
 userRoute.get("/profile", userController_1.profile);
-userRoute.get("/register", userController_1.register);
+userRoute.post("/register", userController_1.register);
 userRoute.post("/verify-code", userController_1.verifyCode);
 userRoute.post("/resend-code", userController_1.resendCode);
 userRoute.post("/reset-password", userController_1.resetPassword);
