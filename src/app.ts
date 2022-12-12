@@ -10,8 +10,7 @@ import consola from "consola";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "passport";
-import { Users } from "./models/userModel";
-import "./strategies/local";
+import "./config/passport";
 
 import { userRoute } from "./routes/userRoute";
 import { operationRoute } from "./routes/operationRoute";
@@ -23,7 +22,6 @@ const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-app.use(session({ secret: "mysecret", resave: true, saveUninitialized: true }));
 app.use(cookieParser());
 app.use(helmet());
 app.use(morgan("tiny"));
@@ -37,6 +35,9 @@ app.set("view engine", "ejs");
 
 // CONNECT TO MONGODB
 mongodbConnect(MONGO_URI ?? "");
+
+// SESSION
+app.use(session({ secret: "mysecret", resave: true, saveUninitialized: true }));
 
 // PASSPORT
 app.use(passport.initialize());

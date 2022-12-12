@@ -72,11 +72,10 @@ const resetPasswordService = async ({ email, resetCode, password, confirmPasswor
 };
 
 const loginService = async ({ email, password }: ILogin) => {
-  if (!email) return { statusCode: 400, message: "Email is required" };
+  let foundUser = await Users.findOne({ email, isVerified: true, verificationCode: null });
 
-  const foundUser = await Users.findOne({ email, isVerified: true, verificationCode: null });
   if (foundUser && (await comparePassword(password, foundUser.password as string))) return foundUser;
-  else return { message: "Invalid email or password" };
+  else return null;
 };
 
 const logoutService = async () => {};

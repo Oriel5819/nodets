@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { loginService, registerService, verificationService, resendCodeService, resetPasswordService } from "../services/authService";
+import passport from "passport";
+import { registerService, verificationService, resendCodeService, resetPasswordService } from "../services/authService";
 
 const welcome = async (request: Request, response: Response) => {
   response.status(200).send("welcome");
@@ -30,14 +31,13 @@ const resetPassword = async (request: Request, response: Response) => {
 };
 
 const login = async (request: Request, response: Response) => {
-  const { email, password } = request.body;
-  response.status(200).send(await loginService({ email, password }));
+  response.send({ message: "Successfully logged in" });
 };
 
-const logout = async (request: Request, response: Response) => {};
+// const logout = async (request: Request, response: Response) => request.logout();
 
 const profile = async (request: Request, response: Response) => {
-  console.log('logged in');
+  console.log("logged in");
   response.status(200).send("profile");
 };
 
@@ -49,4 +49,4 @@ const editPassword = async (request: Request, response: Response) => {
   response.status(200).send("profile");
 };
 
-export { welcome, register, verifyCode, resendCode, resetPassword, login, logout, profile, editProfile, editPassword };
+export { welcome, register, verifyCode, resendCode, resetPassword, login, profile, editProfile, editPassword };
