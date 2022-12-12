@@ -87,7 +87,15 @@ const resetPasswordService = ({ email, resetCode, password, confirmPassword }) =
         return { statusCode: 400, message: "Error occured while resetting password" };
 });
 exports.resetPasswordService = resetPasswordService;
-const loginService = ({ email, password }) => __awaiter(void 0, void 0, void 0, function* () { });
+const loginService = ({ email, password }) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!email)
+        return { statusCode: 400, message: "Email is required" };
+    const foundUser = yield userModel_1.Users.findOne({ email, isVerified: true, verificationCode: null });
+    if (foundUser && (yield (0, userModel_1.comparePassword)(password, foundUser.password)))
+        return foundUser;
+    else
+        return { message: "Invalid email or password" };
+});
 exports.loginService = loginService;
 const logoutService = () => __awaiter(void 0, void 0, void 0, function* () { });
 exports.logoutService = logoutService;

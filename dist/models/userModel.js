@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Users = void 0;
+exports.Users = exports.comparePassword = exports.hashingPassword = void 0;
 const validator_1 = __importDefault(require("validator"));
 const mongoose_1 = require("mongoose");
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -46,6 +46,11 @@ const hashingPassword = (entredPassword) => __awaiter(void 0, void 0, void 0, fu
     const salt = yield bcrypt_1.default.genSalt(10);
     return yield bcrypt_1.default.hash(entredPassword, salt);
 });
+exports.hashingPassword = hashingPassword;
+const comparePassword = (enteredPassword, passwordToCompareWith) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield bcrypt_1.default.compare(enteredPassword, passwordToCompareWith);
+});
+exports.comparePassword = comparePassword;
 const UserSchema = new mongoose_1.Schema({
     firstName: { type: String, trim: true },
     lastName: { type: String, trim: true },
@@ -90,7 +95,7 @@ UserSchema.static("sendEmail", (email, { code, expiredOn }) => __awaiter(void 0,
 }));
 // ! reset password
 UserSchema.static("resetPassword", (email, password) => __awaiter(void 0, void 0, void 0, function* () {
-    yield exports.Users.updateOne({ email, password: yield hashingPassword(password) });
+    yield exports.Users.updateOne({ email, password: yield (0, exports.hashingPassword)(password), verificationCode: null });
     return { statusCode: 200, message: "Password reset" };
 }));
 // ! after saving a user
@@ -102,7 +107,7 @@ UserSchema.pre("save", function (next) {
             if (!this.isModified("password")) {
                 next();
             }
-            this.password = yield hashingPassword((_a = this.password) !== null && _a !== void 0 ? _a : "");
+            this.password = yield (0, exports.hashingPassword)((_a = this.password) !== null && _a !== void 0 ? _a : "");
             next();
         }
         catch (error) {
@@ -123,4 +128,5 @@ UserSchema.post("save", function (doc, next) {
         }
     });
 });
+// UserSchema.plugin(passportLocalMongoose);
 exports.Users = (0, mongoose_1.model)("User", UserSchema);
