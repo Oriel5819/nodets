@@ -35,9 +35,13 @@ const sendingEmail = (email: string, code: string) => {
 };
 
 // ! hashing password
-const hashingPassword = async (entredPassword: string) => {
+export const hashingPassword = async (entredPassword: string) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(entredPassword, salt);
+};
+
+export const comparePassword = async (enteredPassword: string, passwordToCompareWith: string) => {
+  return await bcrypt.compare(enteredPassword, passwordToCompareWith);
 };
 
 const UserSchema = new Schema(
@@ -86,7 +90,7 @@ UserSchema.static("sendEmail", async (email: string, { code, expiredOn }) => {
 
 // ! reset password
 UserSchema.static("resetPassword", async (email: string, password: string) => {
-  await Users.updateOne({ email, password: await hashingPassword(password) });
+  await Users.updateOne({ email, password: await hashingPassword(password), verificationCode: null });
   return { statusCode: 200, message: "Password reset" };
 });
 

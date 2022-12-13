@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
     "dev": "npx tsc && nodemon ./src/app.ts",
-    "pm2": "npx tsc && pm2 start ./src/app.ts --name 'FVOLA' --watch"
+    "pm2": "pm2 start ./src/app.ts --name 'FVOLA' --watch"
   },
   "keywords": [],
   "author": "myname",
@@ -48,6 +48,7 @@
     "@types/node": "^18.8.2",
     "@types/nodemailer": "^6.4.6",
     "@types/passport": "^1.0.11",
+    "@types/passport-local": "^1.0.34",
     "@types/validator": "^13.7.10"
   }
 }
