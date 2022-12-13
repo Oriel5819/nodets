@@ -1,0 +1,8 @@
+<section>
+  <form action="/users/login" method="POST">
+    <input type="text" placeholder="email" value="<%= typeof email != 'undefined' ? email : ''%>" />
+    <input type="password" placeholder="password" value="<%= typeof password != 'undefined' ? password : ''%>" />
+    <button type="submit">Register</button>
+  </form>
+  <p><a id="toRegister" href="/register">Register?</a></p>
+</section>

@@ -1,9 +1,9 @@
-<%- include ("partials/head.ejs") %>
-
-    <%- include ("partials/navbar.ejs") %>
-
-        register
-
-        <form action=""><input type="text"></form>
-
-        <%- include ("partials/footer.ejs") %>
+<section>
+  <form action="/users/register" method="POST">
+    <input type="text" placeholder="email" value="<%= typeof email != 'undefined' ? email : ''%>" />
+    <input type="password" placeholder="password" value="<%= typeof password != 'undefined' ? password : ''%>" />
+    <input type="password" placeholder="confirm password" value="<%= typeof confirmPassword != 'undefined' ? confirmPassword : ''%>" />
+    <button type="submit">Register</button>
+  </form>
+  <p><a id="toLogin" href="/login">Login?</a></p>
+</section>
