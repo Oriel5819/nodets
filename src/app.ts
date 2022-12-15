@@ -3,17 +3,19 @@ import { join } from "path";
 import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
-import expressLayout from "express-ejs-layouts";
 import { MONGO_URI, PORT } from "./config/constant";
 import { mongodbConnect } from "./database/mongodbConnect";
+import mongoStore from "connect-mongo";
 import consola from "consola";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "passport";
 import "./config/passport";
 
+import { authRoute } from "./routes/authRoute";
 import { userRoute } from "./routes/userRoute";
 import { operationRoute } from "./routes/operationRoute";
+import { transferRoute } from "./routes/tranferRoute";
 import { accountStatusRoute } from "./routes/accountStatusRoute";
 
 const port: number | String = PORT ?? 5050;
@@ -37,7 +39,7 @@ app.set("view engine", "ejs");
 mongodbConnect(MONGO_URI ?? "");
 
 // SESSION
-app.use(session({ secret: "mysecret", resave: true, saveUninitialized: true }));
+app.use(session({ secret: "mysecret", resave: true, saveUninitialized: true, store: mongoStore.create({ mongoUrl: MONGO_URI }) }));
 
 // PASSPORT
 app.use(passport.initialize());
@@ -46,8 +48,12 @@ app.use(passport.session());
 
 // ROUTES
 // app.use("/", (request: Request, response: Response) => response.render("index"));
-app.use("/users", userRoute);
-app.use("/operations", operationRoute);
-app.use("/accounts", accountStatusRoute);
+app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/users", userRoute);
+app.use("/api/v1/operations", operationRoute);
+app.use("/api/v1/transfers", transferRoute);
+app.use("/api/v1/accounts", accountStatusRoute);
+
+app.all("*", (request: Request, response: Response) => response.status(400).send({ message: "404 Not found." }));
 
 app.listen(port, () => consola.success({ badge: true, message: "Running in port", port }));

@@ -1,14 +1,31 @@
 export interface IUser {
-  firstName: String;
-  laststName: String;
-  email: String;
-  password: String;
-  isAdmin: Boolean;
-  isActivated: Boolean;
-  isVerified: Boolean;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  isAdmin: boolean;
+  isTeller: boolean;
+  isActivated: boolean;
+  isVerified: boolean;
   verificationCode: {
-    code: String;
+    code: string;
     expiredOn: Date;
+  };
+  balance: {
+    current: number;
+    carry: [
+      {
+        id: string;
+        _id: string;
+        description: string;
+        type: string;
+        account: string;
+        amount: number;
+        accepted: boolean;
+        date: Date;
+      }
+    ];
+    operations: [{ id: string; description: string; type: string; account: string; amount: Number; date: Date }];
   };
 }
 
