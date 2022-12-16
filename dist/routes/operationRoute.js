@@ -2,12 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.operationRoute = void 0;
 const express_1 = require("express");
+const authentication_1 = require("../middleware/authentication");
+const operationController_1 = require("../controllers/operationController");
 const operationRoute = (0, express_1.Router)();
 exports.operationRoute = operationRoute;
-operationRoute.get("/balance", () => { });
-operationRoute.post("/topup", () => { });
-operationRoute.post("/withdraw", () => { });
-operationRoute.post("/send-request", () => { });
-operationRoute.post("/send-accept", () => { });
-operationRoute.post("/receive-request", () => { });
-operationRoute.post("/receive-accept", () => { });
+operationRoute.get("/statement", authentication_1.ensureAuthenticated, operationController_1.statement);
+operationRoute.post("/deposit", authentication_1.ensureAuthenticated, operationController_1.deposit);
+operationRoute.post("/withdraw", authentication_1.ensureAuthenticated, operationController_1.withdraw);

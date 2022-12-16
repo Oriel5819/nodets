@@ -14,7 +14,7 @@ const profile = async (request: Request, response: Response) => {
     lastName: foundUser.lastName,
     email: foundUser.email,
     balance: foundUser.balance.current,
-    carry: foundUser.balance.carry.filter((carry) => !carry.accepted),
+    carry: foundUser.balance.carry.filter((carry) => !carry.isAccepted && !carry.isRejected && !carry.isRecalled),
   });
 };
 

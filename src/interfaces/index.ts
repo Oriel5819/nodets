@@ -13,20 +13,34 @@ export interface IUser {
   };
   balance: {
     current: number;
-    carry: [
-      {
-        id: string;
-        _id: string;
-        description: string;
-        type: string;
-        account: string;
-        amount: number;
-        accepted: boolean;
-        date: Date;
-      }
-    ];
-    operations: [{ id: string; description: string; type: string; account: string; amount: Number; date: Date }];
+    carry: [ICarry];
+    operations: [IOperation];
   };
+}
+
+export interface IOperation {
+  id: string;
+  description: string;
+  type: string;
+  account: string;
+  amount: number;
+  isAccepted: Boolean;
+  isRejected: Boolean;
+  isRecalled: Boolean;
+  date: Date;
+}
+
+export interface ICarry {
+  id: string;
+  description: string;
+  type: string;
+  account: string;
+  amount: number;
+  isAccepted: Boolean;
+  isRejected: Boolean;
+  isRecalled: Boolean;
+  sentDate: Date;
+  acceptedDate: Date | null;
 }
 
 export interface ICredential {

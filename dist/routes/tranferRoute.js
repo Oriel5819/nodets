@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.transferRoute = void 0;
+const express_1 = require("express");
+const authentication_1 = require("../middleware/authentication");
+const transferController_1 = require("../controllers/transferController");
+const transferRoute = (0, express_1.Router)();
+exports.transferRoute = transferRoute;
+transferRoute.post("/request-send/:accountTargetId", authentication_1.ensureAuthenticated, transferController_1.requestSend);
+transferRoute.post("/recall-sent/:accountTargetId/:carryId", authentication_1.ensureAuthenticated, transferController_1.recallSent);
+transferRoute.post("/request-receive", authentication_1.ensureAuthenticated, () => { });
+transferRoute.post("/accept-received", authentication_1.ensureAuthenticated, () => { });

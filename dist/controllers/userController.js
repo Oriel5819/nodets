@@ -18,9 +18,13 @@ const profile = (request, response) => __awaiter(void 0, void 0, void 0, functio
     const foundUser = yield userModel_1.Users.findOne({ email: request.user, isVerified: true });
     if (!foundUser)
         return response.status(400).send({ message: "Unabled to find a user profile" });
-    return response
-        .status(200)
-        .send({ firstName: foundUser.firstName, lastName: foundUser.lastName, email: foundUser.email, balance: foundUser.balance, isAdmin: foundUser.isAdmin, isTeller: foundUser.isTeller });
+    return response.status(200).send({
+        firstName: foundUser.firstName,
+        lastName: foundUser.lastName,
+        email: foundUser.email,
+        balance: foundUser.balance.current,
+        carry: foundUser.balance.carry.filter((carry) => !carry.accepted),
+    });
 });
 exports.profile = profile;
 const editProfile = (request, response) => __awaiter(void 0, void 0, void 0, function* () {

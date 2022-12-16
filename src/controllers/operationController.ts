@@ -10,9 +10,10 @@ const statement = async (request: Request, response: Response) => {
 };
 
 const deposit = async (request: Request, response: Response) => {
-  const { amount, accountTargetId, description } = request.body;
+  const { accountTargetId } = request.params;
+  const { amount, description } = request.body;
   const updates = Object.keys(request.body);
-  const allowedToBeUpdate = ["amount", "accountTargetId", "description"];
+  const allowedToBeUpdate = ["amount", "description"];
   const isValidOperation = updates.every((update) => allowedToBeUpdate.includes(update));
 
   if (!isValidOperation) return response.status(400).send({ message: "Invalid updates" });
@@ -22,7 +23,7 @@ const deposit = async (request: Request, response: Response) => {
 
   if (!me) return response.status(400).send({ message: "No user found." });
   if (!target) return response.status(400).send({ message: "No target user found." });
-  if (!me.isTeller) return response.status(400).send({ message: "Unauthorized action." });
+  if (!me.isTeller || me._id.toString() === accountTargetId.toString()) return response.status(400).send({ message: "Unauthorized action." });
 
   if ((me.balance.current as number) - amount < 0) return response.status(400).send({ message: "Insufficient balance" });
 
@@ -43,9 +44,10 @@ const deposit = async (request: Request, response: Response) => {
 };
 
 const withdraw = async (request: Request, response: Response) => {
-  const { amount, accountTargetId, description } = request.body;
+  const { accountTargetId } = request.params;
+  const { amount, description } = request.body;
   const updates = Object.keys(request.body);
-  const allowedToBeUpdate = ["amount", "accountTargetId", "description"];
+  const allowedToBeUpdate = ["amount", "description"];
   const isValidOperation = updates.every((update) => allowedToBeUpdate.includes(update));
 
   if (!isValidOperation) return response.status(400).send({ message: "Invalid updates" });
@@ -55,7 +57,7 @@ const withdraw = async (request: Request, response: Response) => {
 
   if (!me) return response.status(400).send({ message: "No user found." });
   if (!target) return response.status(400).send({ message: "No target user found." });
-  if (!me.isTeller) return response.status(400).send({ message: "Unauthorized action." });
+  if (!me.isTeller || me._id.toString() === accountTargetId.toString()) return response.status(400).send({ message: "Unauthorized action." });
 
   if ((target.balance.current as number) - amount < 0) return response.status(400).send({ message: "Insufficient balance" });
 

@@ -66,7 +66,7 @@ const verificationService = ({ email, code }) => __awaiter(void 0, void 0, void 
     const expireTime = Math.floor(new Date((_b = foundUser === null || foundUser === void 0 ? void 0 : foundUser.verificationCode) === null || _b === void 0 ? void 0 : _b.expiredOn).getTime());
     if (expireTime < Date.now())
         return { statusCode: 400, message: "Expired code" };
-    yield userModel_1.Users.updateOne({ email, isVerified: false }, { verificationCode: null, isVerified: true });
+    yield userModel_1.Users.updateOne({ email, isVerified: false }, { verificationCode: null, isVerified: true, isActivated: true });
     return { statusCode: 200, message: "Account has been verified" };
 });
 exports.verificationService = verificationService;
