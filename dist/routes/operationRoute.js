@@ -7,5 +7,5 @@ const operationController_1 = require("../controllers/operationController");
 const operationRoute = (0, express_1.Router)();
 exports.operationRoute = operationRoute;
 operationRoute.get("/statement", authentication_1.ensureAuthenticated, operationController_1.statement);
-operationRoute.post("/deposit", authentication_1.ensureAuthenticated, operationController_1.deposit);
-operationRoute.post("/withdraw", authentication_1.ensureAuthenticated, operationController_1.withdraw);
+operationRoute.post("/deposit/:accountTargetId", authentication_1.ensureAuthenticated, operationController_1.deposit);
+operationRoute.post("/withdraw/:accountTargetId", authentication_1.ensureAuthenticated, operationController_1.withdraw);

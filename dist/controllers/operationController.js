@@ -20,9 +20,10 @@ const statement = (request, response) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.statement = statement;
 const deposit = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    const { amount, accountTargetId, description } = request.body;
+    const { accountTargetId } = request.params;
+    const { amount, description } = request.body;
     const updates = Object.keys(request.body);
-    const allowedToBeUpdate = ["amount", "accountTargetId", "description"];
+    const allowedToBeUpdate = ["amount", "description"];
     const isValidOperation = updates.every((update) => allowedToBeUpdate.includes(update));
     if (!isValidOperation)
         return response.status(400).send({ message: "Invalid updates" });
@@ -32,7 +33,7 @@ const deposit = (request, response) => __awaiter(void 0, void 0, void 0, functio
         return response.status(400).send({ message: "No user found." });
     if (!target)
         return response.status(400).send({ message: "No target user found." });
-    if (!me.isTeller)
+    if (!me.isTeller || me._id.toString() === accountTargetId.toString())
         return response.status(400).send({ message: "Unauthorized action." });
     if (me.balance.current - amount < 0)
         return response.status(400).send({ message: "Insufficient balance" });
@@ -50,9 +51,10 @@ const deposit = (request, response) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.deposit = deposit;
 const withdraw = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    const { amount, accountTargetId, description } = request.body;
+    const { accountTargetId } = request.params;
+    const { amount, description } = request.body;
     const updates = Object.keys(request.body);
-    const allowedToBeUpdate = ["amount", "accountTargetId", "description"];
+    const allowedToBeUpdate = ["amount", "description"];
     const isValidOperation = updates.every((update) => allowedToBeUpdate.includes(update));
     if (!isValidOperation)
         return response.status(400).send({ message: "Invalid updates" });
@@ -62,7 +64,7 @@ const withdraw = (request, response) => __awaiter(void 0, void 0, void 0, functi
         return response.status(400).send({ message: "No user found." });
     if (!target)
         return response.status(400).send({ message: "No target user found." });
-    if (!me.isTeller)
+    if (!me.isTeller || me._id.toString() === accountTargetId.toString())
         return response.status(400).send({ message: "Unauthorized action." });
     if (target.balance.current - amount < 0)
         return response.status(400).send({ message: "Insufficient balance" });
