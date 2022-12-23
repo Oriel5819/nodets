@@ -25,6 +25,8 @@ const profile = (request, response) => __awaiter(void 0, void 0, void 0, functio
         email: foundUser.email,
         balance: foundUser.balance.current,
         carry: foundUser.balance.carry.filter((carry) => !carry.isAccepted && !carry.isRejected && !carry.isRecalled),
+        isAdmin: foundUser.isAdmin,
+        isTeller: foundUser.isTeller,
     });
 });
 exports.profile = profile;
