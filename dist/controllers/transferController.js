@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.acceptAskReceive = exports.recallAskReceive = exports.requestAskReceive = exports.cancelReceive = exports.acceptReceive = exports.recallSent = exports.requestSend = void 0;
+exports.declineAsk = exports.acceptAsk = exports.recallAsk = exports.requestAsk = exports.declineReceive = exports.acceptReceive = exports.recallSent = exports.requestSend = void 0;
 const userModel_1 = require("../models/userModel");
 const uuid_1 = require("uuid");
 const requestSend = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
@@ -67,32 +67,28 @@ const recallSent = (request, response) => __awaiter(void 0, void 0, void 0, func
     let myCurrentBalance = me.balance.current;
     let myOperation = me.balance.operations;
     // CHANGE ME CARRY TYPE AND CURRENT BALANCE
-    for (let carry of myCarry) {
+    for (let carry of myCarry)
         if (carry.id === carryId && carry.type === "sent") {
             carry.isRecalled = true;
             carry.acceptedDate = currentTime;
             myCurrentBalance += carry.amount;
         }
-    }
     // CHANGE ME OPERATION TYPE
-    for (let operation of myOperation) {
+    for (let operation of myOperation)
         if (operation.id === carryId && operation.type === "withdrawal")
             operation.isRecalled = true;
-    }
     let targetCarry = target.balance.carry;
     let targetOperation = target.balance.operations;
     // CHANGE TARGET CARRY TYPE AND CURRENT BALANCE
-    for (let carry of targetCarry) {
+    for (let carry of targetCarry)
         if (carry.id === carryId && carry.type === "received") {
             carry.isRecalled = true;
             carry.acceptedDate = currentTime;
         }
-    }
     // CHANGE TARGET OPERATION TYPE
-    for (let operation of targetOperation) {
+    for (let operation of targetOperation)
         if (operation.id === carryId && operation.type === "deposit")
             operation.isRecalled = true;
-    }
     yield userModel_1.Users.updateOne({ email: request.user, isVerified: true, isActivated: true }, { balance: { current: myCurrentBalance, operations: myOperation, carry: myCarry } });
     yield userModel_1.Users.updateOne({ _id: accountTargetId }, { balance: { current: target.balance.current, operations: targetOperation, carry: targetCarry } });
     return response.status(200).send({ id: foundTransfer.id, isRecalled: foundTransfer.isRecalled });
@@ -119,39 +115,34 @@ const acceptReceive = (request, response) => __awaiter(void 0, void 0, void 0, f
     let myCurrentBalance = me.balance.current;
     let myOperation = me.balance.operations;
     // CHANGE ME CARRY TYPE AND CURRENT BALANCE
-    for (let carry of myCarry) {
+    for (let carry of myCarry)
         if (carry.id === carryId && carry.type === "received") {
             carry.isAccepted = true;
             myCurrentBalance += carry.amount;
             carry.acceptedDate = currentTime;
         }
-    }
     // CHANGE ME OPERATION
-    for (let operation of myOperation) {
-        if (operation.id === carryId && operation.type === "deposit") {
+    for (let operation of myOperation)
+        if (operation.id === carryId && operation.type === "deposit")
             operation.isAccepted = true;
-        }
-    }
     let senderCarry = sender.balance.carry;
     let senderOperation = sender.balance.operations;
     // CHANGE SENDER CARRY TYPE AND CURRENT BALANCE
-    for (let carry of senderCarry) {
+    for (let carry of senderCarry)
         if (carry.id === carryId && carry.type === "sent") {
             carry.isAccepted = true;
             carry.acceptedDate = currentTime;
         }
-    }
     // CHANGE SENDER CARRY TYPE AND CURRENT BALANCE
-    for (let operation of senderOperation) {
+    for (let operation of senderOperation)
         if (operation.id === carryId && operation.type === "withdrawal")
             operation.isAccepted = true;
-    }
     yield userModel_1.Users.updateOne({ email: request.user, isVerified: true, isActivated: true }, { balance: { current: myCurrentBalance, operations: myOperation, carry: myCarry } });
     yield userModel_1.Users.updateOne({ _id: senderId }, { balance: { current: sender.balance.current, operations: senderOperation, carry: senderCarry } });
     response.send({ message: foundTransfer.amount + " has been added to your account." });
 });
 exports.acceptReceive = acceptReceive;
-const cancelReceive = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+const declineReceive = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     const { senderId, carryId } = request.params;
     const me = yield userModel_1.Users.findOne({ email: request.user, isVerified: true, isActivated: true });
     const sender = yield userModel_1.Users.findById(senderId);
@@ -170,37 +161,32 @@ const cancelReceive = (request, response) => __awaiter(void 0, void 0, void 0, f
     let myCarry = me.balance.carry;
     let myOperation = me.balance.operations;
     // CHANGE ME CARRY TYPE AND CURRENT BALANCE
-    for (let carry of myCarry) {
+    for (let carry of myCarry)
         if (carry.id === carryId && carry.type === "received")
             carry.isRejected = true;
-    }
     // CHANGE ME OPERATION
-    for (let operation of myOperation) {
+    for (let operation of myOperation)
         if (operation.id === carryId && operation.type === "deposit")
             operation.isRejected = true;
-    }
     let senderCarry = sender.balance.carry;
     let senderCurrentBalance = sender.balance.current;
     let senderOperation = sender.balance.operations;
     // CHANGE SENDER CARRY TYPE AND CURRENT BALANCE
-    for (let carry of senderCarry) {
+    for (let carry of senderCarry)
         if (carry.id === carryId && carry.type === "sent") {
             senderCurrentBalance += carry.amount;
             carry.isRejected = true;
         }
-    }
     // CHANGE SENDER OPERATION
-    for (let operation of senderOperation) {
-        if (operation.id === carryId && operation.type === "deposit") {
+    for (let operation of senderOperation)
+        if (operation.id === carryId && operation.type === "deposit")
             operation.isRejected = true;
-        }
-    }
     yield userModel_1.Users.updateOne({ email: request.user, isVerified: true, isActivated: true }, { balance: { current: me.balance.current, operations: myOperation, carry: myCarry } });
     yield userModel_1.Users.updateOne({ _id: senderId }, { balance: { current: senderCurrentBalance, operations: senderOperation, carry: senderCarry } });
     response.send({ message: "Receiving has been declined." });
 });
-exports.cancelReceive = cancelReceive;
-const requestAskReceive = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+exports.declineReceive = declineReceive;
+const requestAsk = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     const { accountTargetId } = request.params;
     const { amount, description } = request.body;
     const updates = Object.keys(request.body);
@@ -230,8 +216,8 @@ const requestAskReceive = (request, response) => __awaiter(void 0, void 0, void 
     yield userModel_1.Users.updateOne({ _id: accountTargetId }, { balance: { current: target.balance.current, operations: targetOperation, carry: targetCarry } });
     return response.status(200).send({ message: "You have asked " + amount + " from " + target.firstName + ". Reason: " + description });
 });
-exports.requestAskReceive = requestAskReceive;
-const recallAskReceive = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+exports.requestAsk = requestAsk;
+const recallAsk = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     const { accountTargetId, carryId } = request.params;
     const me = yield userModel_1.Users.findOne({ email: request.user, isVerified: true, isActivated: true });
     const target = yield userModel_1.Users.findById(accountTargetId);
@@ -251,37 +237,33 @@ const recallAskReceive = (request, response) => __awaiter(void 0, void 0, void 0
     let myCarry = me.balance.carry;
     let myOperation = me.balance.operations;
     // CHANGE ME CARRY TYPE AND CURRENT BALANCE
-    for (let carry of myCarry) {
+    for (let carry of myCarry)
         if (carry.id === carryId && carry.type === "ask-receive") {
             carry.isRecalled = true;
             carry.acceptedDate = currentTime;
         }
-    }
     // CHANGE ME OPERATION TYPE
-    for (let operation of myOperation) {
+    for (let operation of myOperation)
         if (operation.id === carryId && operation.type === "deposit")
             operation.isRecalled = true;
-    }
     let targetCarry = target.balance.carry;
     let targetOperation = target.balance.operations;
     // CHANGE TARGET CARRY TYPE AND CURRENT BALANCE
-    for (let carry of targetCarry) {
+    for (let carry of targetCarry)
         if (carry.id === carryId && carry.type === "ask-send") {
             carry.isRecalled = true;
             carry.acceptedDate = currentTime;
         }
-    }
     // CHANGE TARGET OPERATION TYPE
-    for (let operation of targetOperation) {
+    for (let operation of targetOperation)
         if (operation.id === carryId && operation.type === "withdrawal")
             operation.isRecalled = true;
-    }
     yield userModel_1.Users.updateOne({ email: request.user, isVerified: true, isActivated: true }, { balance: { current: me.balance.current, operations: myOperation, carry: myCarry } });
     yield userModel_1.Users.updateOne({ _id: accountTargetId }, { balance: { current: target.balance.current, operations: targetOperation, carry: targetCarry } });
     return response.status(200).send({ id: foundTransfer.id, isRecalled: foundTransfer.isRecalled });
 });
-exports.recallAskReceive = recallAskReceive;
-const acceptAskReceive = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+exports.recallAsk = recallAsk;
+const acceptAsk = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     const { senderId, carryId } = request.params;
     const me = yield userModel_1.Users.findOne({ email: request.user, isVerified: true, isActivated: true });
     const sender = yield userModel_1.Users.findById(senderId);
@@ -302,35 +284,73 @@ const acceptAskReceive = (request, response) => __awaiter(void 0, void 0, void 0
     let myCurrentBalance = me.balance.current;
     let myOperation = me.balance.operations;
     // CHANGE ME CARRY TYPE AND CURRENT BALANCE
-    for (let carry of myCarry) {
+    for (let carry of myCarry)
         if (carry.id === carryId && carry.type === "ask-send") {
             carry.isAccepted = true;
             myCurrentBalance -= carry.amount;
             carry.acceptedDate = currentTime;
         }
-    }
     // CHANGE ME OPERATION
-    for (let operation of myOperation) {
-        if (operation.id === carryId && operation.type === "deposit") {
+    for (let operation of myOperation)
+        if (operation.id === carryId && operation.type === "withdrawal")
             operation.isAccepted = true;
-        }
-    }
+    let senderCurrentBalance = sender.balance.current;
     let senderCarry = sender.balance.carry;
     let senderOperation = sender.balance.operations;
     // CHANGE SENDER CARRY TYPE AND CURRENT BALANCE
-    for (let carry of senderCarry) {
-        if (carry.id === carryId && carry.type === "sent") {
+    for (let carry of senderCarry)
+        if (carry.id === carryId && carry.type === "ask-receive") {
+            senderCurrentBalance += carry.amount;
             carry.isAccepted = true;
             carry.acceptedDate = currentTime;
         }
-    }
     // CHANGE SENDER CARRY TYPE AND CURRENT BALANCE
-    for (let operation of senderOperation) {
-        if (operation.id === carryId && operation.type === "withdrawal")
+    for (let operation of senderOperation)
+        if (operation.id === carryId && operation.type === "deposit")
             operation.isAccepted = true;
-    }
     yield userModel_1.Users.updateOne({ email: request.user, isVerified: true, isActivated: true }, { balance: { current: myCurrentBalance, operations: myOperation, carry: myCarry } });
-    yield userModel_1.Users.updateOne({ _id: senderId }, { balance: { current: sender.balance.current, operations: senderOperation, carry: senderCarry } });
-    response.send({ message: foundTransfer.amount + " has been added to your account." });
+    yield userModel_1.Users.updateOne({ _id: senderId }, { balance: { current: senderCurrentBalance, operations: senderOperation, carry: senderCarry } });
+    response.send({ message: foundTransfer.amount + " has been sent to " });
 });
-exports.acceptAskReceive = acceptAskReceive;
+exports.acceptAsk = acceptAsk;
+const declineAsk = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { senderId, carryId } = request.params;
+    const me = yield userModel_1.Users.findOne({ email: request.user, isVerified: true, isActivated: true });
+    const sender = yield userModel_1.Users.findById(senderId);
+    if (!me)
+        return response.status(400).send({ message: "No user was found." });
+    if (!sender)
+        return response.status(400).send({ message: "No sender user was found." });
+    if (me._id.toString() === senderId)
+        return response.status(400).send({ message: "Unauthorized action." });
+    const [foundTransfer] = me.balance.carry.filter((carry) => carry.id === carryId && carry.type === "ask-send" && !carry.isAccepted && !carry.isRecalled && !carry.isRejected);
+    const [foundSent] = sender.balance.carry.filter((carry) => carry.id === carryId && carry.type === "ask-receive" && !carry.isAccepted && !carry.isRecalled && !carry.isRejected);
+    if (!foundTransfer)
+        return response.status(400).send({ message: "No operation was found1." });
+    if (!foundSent)
+        return response.status(400).send({ message: "No operation was found2." });
+    let myCarry = me.balance.carry;
+    let myOperation = me.balance.operations;
+    // CHANGE ME CARRY TYPE AND CURRENT BALANCE
+    for (let carry of myCarry)
+        if (carry.id === carryId && carry.type === "ask-send")
+            carry.isRejected = true;
+    // CHANGE ME OPERATION
+    for (let operation of myOperation)
+        if (operation.id === carryId && operation.type === "withdrawal")
+            operation.isRejected = true;
+    let senderCarry = sender.balance.carry;
+    let senderOperation = sender.balance.operations;
+    // CHANGE SENDER CARRY TYPE AND CURRENT BALANCE
+    for (let carry of senderCarry)
+        if (carry.id === carryId && carry.type === "ask-receive")
+            carry.isRejected = true;
+    // CHANGE SENDER OPERATION
+    for (let operation of senderOperation)
+        if (operation.id === carryId && operation.type === "deposit")
+            operation.isRejected = true;
+    yield userModel_1.Users.updateOne({ email: request.user, isVerified: true, isActivated: true }, { balance: { current: me.balance.current, operations: myOperation, carry: myCarry } });
+    yield userModel_1.Users.updateOne({ _id: senderId }, { balance: { current: sender.balance.current, operations: senderOperation, carry: senderCarry } });
+    response.send({ message: "Ask has been declined." });
+});
+exports.declineAsk = declineAsk;

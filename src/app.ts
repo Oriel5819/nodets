@@ -23,7 +23,7 @@ const app: Application = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: "http://localhost:3050", credentials: true }));
 app.use(cookieParser());
 app.use(helmet());
 app.use(morgan("tiny"));
@@ -47,7 +47,7 @@ app.use(passport.session());
 // passport.use(Users.createStrategy());
 
 // ROUTES
-// app.use("/", (request: Request, response: Response) => response.render("index"));
+app.get("/", (request: Request, response: Response) => response.status(200).send("welcome to fvola api v1.0.0"));
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/operations", operationRoute);

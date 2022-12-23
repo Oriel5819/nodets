@@ -19,6 +19,7 @@ const profile = (request, response) => __awaiter(void 0, void 0, void 0, functio
     if (!foundUser)
         return response.status(400).send({ message: "Unabled to find a user profile" });
     return response.status(200).send({
+        id: foundUser._id,
         firstName: foundUser.firstName,
         lastName: foundUser.lastName,
         email: foundUser.email,

@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
     "dev": "npx tsc && nodemon ./src/app.ts",
-    "pm2": "pm2 start ./src/app.ts --name 'FVOLA' --watch"
+    "watch": "npx tsc --watch",
+    "pm2": "pm2 start ./dist/app.js --name 'FVOLA-BACK' --watch"
   },
   "keywords": [],
   "author": "myname",
