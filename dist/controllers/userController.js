@@ -9,49 +9,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.editPassword = exports.editProfile = exports.profile = exports.logout = exports.login = exports.resetPassword = exports.resendCode = exports.verifyCode = exports.register = exports.welcome = void 0;
-const authService_1 = require("../services/authService");
-const welcome = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    response.status(200).send("welcome");
-});
-exports.welcome = welcome;
-const register = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password, confirmPassword } = request.body;
-    const { statusCode, message } = yield (0, authService_1.registerService)({ email, password, confirmPassword });
-    response.status(statusCode).send({ message });
-});
-exports.register = register;
-const verifyCode = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, code } = request.body;
-    const { statusCode, message } = yield (0, authService_1.verificationService)({ email, code });
-    response.status(statusCode).send({ message });
-});
-exports.verifyCode = verifyCode;
-const resendCode = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = request.body;
-    const { statusCode, message } = yield (0, authService_1.resendCodeService)({ email });
-    response.status(statusCode).send({ message });
-});
-exports.resendCode = resendCode;
-const resetPassword = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, resetCode, password, confirmPassword } = request.body;
-    const { statusCode, message } = yield (0, authService_1.resetPasswordService)({ email, resetCode, password, confirmPassword });
-    response.status(statusCode).send({ message });
-});
-exports.resetPassword = resetPassword;
-const login = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = request.body;
-    response.status(200).send(yield (0, authService_1.loginService)({ email, password }));
-});
-exports.login = login;
-const logout = (request, response) => __awaiter(void 0, void 0, void 0, function* () { });
-exports.logout = logout;
+exports.editPassword = exports.editProfile = exports.profile = void 0;
+const userModel_1 = require("../models/userModel");
+// import {} from "../services/userService";
 const profile = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    response.status(200).send("profile");
+    if (!request.user)
+        return response.status(400).send({ message: "Authentication required" });
+    const foundUser = yield userModel_1.Users.findOne({ email: request.user, isVerified: true });
+    if (!foundUser)
+        return response.status(400).send({ message: "Unabled to find a user profile" });
+    return response.status(200).send({
+        id: foundUser._id,
+        firstName: foundUser.firstName,
+        lastName: foundUser.lastName,
+        email: foundUser.email,
+        balance: foundUser.balance.current,
+        carry: foundUser.balance.carry.filter((carry) => !carry.isAccepted && !carry.isRejected && !carry.isRecalled),
+        isAdmin: foundUser.isAdmin,
+        isTeller: foundUser.isTeller,
+    });
 });
 exports.profile = profile;
 const editProfile = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    response.status(200).send("profile");
+    const updates = Object.keys(request.body);
+    const allowedToBeUpdate = ["firstName", "lastName", "address"];
+    const { firstName, lastName, address } = request.body;
+    const isValidOperation = updates.every((update) => allowedToBeUpdate.includes(update));
+    if (!request.user)
+        return response.status(400).send({ message: "Authentication required" });
+    if (!isValidOperation)
+        return response.status(400).send({ message: "Invalid updates" });
+    const updatedUser = yield userModel_1.Users.findOneAndUpdate({ email: request.user }, { firstName, lastName, address }, { new: true, runValidators: true });
+    if (!updatedUser)
+        return response.status(400).send({ message: "Unabled to update user profile" });
+    return response.status(200).send({ message: "User profile updated." });
 });
 exports.editProfile = editProfile;
 const editPassword = (request, response) => __awaiter(void 0, void 0, void 0, function* () {

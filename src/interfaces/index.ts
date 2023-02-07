@@ -1,15 +1,46 @@
 export interface IUser {
-  firstName: String;
-  laststName: String;
-  email: String;
-  password: String;
-  isAdmin: Boolean;
-  isActivated: Boolean;
-  isVerified: Boolean;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  isAdmin: boolean;
+  isTeller: boolean;
+  isActivated: boolean;
+  isVerified: boolean;
   verificationCode: {
-    code: String;
+    code: string;
     expiredOn: Date;
   };
+  balance: {
+    current: number;
+    carry: [ICarry];
+    operations: [IOperation];
+  };
+}
+
+export interface IOperation {
+  id: string;
+  description: string;
+  type: string;
+  account: string;
+  amount: number;
+  isAccepted: Boolean;
+  isRejected: Boolean;
+  isRecalled: Boolean;
+  date: Date;
+}
+
+export interface ICarry {
+  id: string;
+  description: string;
+  type: string;
+  account: string;
+  amount: number;
+  isAccepted: Boolean;
+  isRejected: Boolean;
+  isRecalled: Boolean;
+  sentDate: Date;
+  acceptedDate: Date | null;
 }
 
 export interface ICredential {

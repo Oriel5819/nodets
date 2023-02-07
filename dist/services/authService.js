@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutService = exports.loginService = exports.resetPasswordService = exports.resendCodeService = exports.verificationService = exports.registerService = void 0;
+exports.resetPasswordService = exports.resendCodeService = exports.verificationService = exports.registerService = void 0;
 const userModel_1 = require("../models/userModel");
 const registerService = ({ email, password, confirmPassword }) => __awaiter(void 0, void 0, void 0, function* () {
     if (!email)
@@ -41,9 +41,13 @@ const resendCodeService = ({ email }) => __awaiter(void 0, void 0, void 0, funct
         expiredOn: new Date(Date.now() + 1000 * 60 * 3),
     };
     if (!email)
-        return { statusCode: 400, message: "Email is required" };
-    const { statusCode, message } = yield userModel_1.Users.sendEmail(email, verificationCode);
-    return { statusCode, message };
+        return { statusCode: 400, message: "Email is required." };
+    const foundUser = yield userModel_1.Users.findOne({ email });
+    if (!foundUser)
+        return { statusCode: 400, message: "User not found." };
+    yield userModel_1.Users.updateOne({ email }, { verificationCode });
+    yield userModel_1.Users.sendEmail(email, verificationCode);
+    return { statusCode: 200, message: "Code has been sent successfully." };
 });
 exports.resendCodeService = resendCodeService;
 const verificationService = ({ email, code }) => __awaiter(void 0, void 0, void 0, function* () {
@@ -52,18 +56,17 @@ const verificationService = ({ email, code }) => __awaiter(void 0, void 0, void 
         return { statusCode: 400, message: "Email is required" };
     if (!code)
         return { statusCode: 400, message: "The verification code is required" };
-    if (yield userModel_1.Users.findOne({ email, isVerified: true }))
-        return { statusCode: 401, message: "Account already verified" };
-    const foundUser = yield userModel_1.Users.findOne({ email, isVerified: false });
+    const foundUser = yield userModel_1.Users.findOne({ email });
     if (!foundUser)
-        return { statusCode: 400, message: "Invalid Email" };
-    if (((_a = foundUser === null || foundUser === void 0 ? void 0 : foundUser.verificationCode) === null || _a === void 0 ? void 0 : _a.code) !== code) {
+        return { statusCode: 400, message: "Invalid email." };
+    if (foundUser.isVerified)
+        return { statusCode: 400, message: "Account already verified." };
+    if (((_a = foundUser === null || foundUser === void 0 ? void 0 : foundUser.verificationCode) === null || _a === void 0 ? void 0 : _a.code) !== code)
         return { statusCode: 400, message: "Invalid code" };
-    }
     const expireTime = Math.floor(new Date((_b = foundUser === null || foundUser === void 0 ? void 0 : foundUser.verificationCode) === null || _b === void 0 ? void 0 : _b.expiredOn).getTime());
     if (expireTime < Date.now())
         return { statusCode: 400, message: "Expired code" };
-    yield userModel_1.Users.updateOne({ email, verificationCode: null, isVerified: true });
+    yield userModel_1.Users.updateOne({ email, isVerified: false }, { verificationCode: null, isVerified: true, isActivated: true });
     return { statusCode: 200, message: "Account has been verified" };
 });
 exports.verificationService = verificationService;
@@ -87,7 +90,3 @@ const resetPasswordService = ({ email, resetCode, password, confirmPassword }) =
         return { statusCode: 400, message: "Error occured while resetting password" };
 });
 exports.resetPasswordService = resetPasswordService;
-const loginService = ({ email, password }) => __awaiter(void 0, void 0, void 0, function* () { });
-exports.loginService = loginService;
-const logoutService = () => __awaiter(void 0, void 0, void 0, function* () { });
-exports.logoutService = logoutService;

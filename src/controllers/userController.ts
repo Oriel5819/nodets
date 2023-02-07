@@ -1,51 +1,45 @@
 import { Request, Response, NextFunction } from "express";
-import { loginService, registerService, verificationService, resendCodeService, resetPasswordService } from "../services/authService";
-
-const welcome = async (request: Request, response: Response) => {
-  response.status(200).send("welcome");
-};
-
-const register = async (request: Request, response: Response) => {
-  const { email, password, confirmPassword } = request.body;
-  const { statusCode, message } = await registerService({ email, password, confirmPassword });
-  response.status(statusCode).send({ message });
-};
-
-const verifyCode = async (request: Request, response: Response) => {
-  const { email, code } = request.body;
-  const { statusCode, message } = await verificationService({ email, code });
-  response.status(statusCode).send({ message });
-};
-
-const resendCode = async (request: Request, response: Response) => {
-  const { email } = request.body;
-  const { statusCode, message } = await resendCodeService({ email });
-  response.status(statusCode).send({ message });
-};
-
-const resetPassword = async (request: Request, response: Response) => {
-  const { email, resetCode, password, confirmPassword } = request.body;
-  const { statusCode, message } = await resetPasswordService({ email, resetCode, password, confirmPassword });
-  response.status(statusCode).send({ message });
-};
-
-const login = async (request: Request, response: Response) => {
-  const { email, password } = request.body;
-  response.status(200).send(await loginService({ email, password }));
-};
-
-const logout = async (request: Request, response: Response) => {};
+import passport from "passport";
+import { Users } from "../models/userModel";
+// import {} from "../services/userService";
 
 const profile = async (request: Request, response: Response) => {
-  response.status(200).send("profile");
+  if (!request.user) return response.status(400).send({ message: "Authentication required" });
+
+  const foundUser = await Users.findOne({ email: request.user, isVerified: true });
+  if (!foundUser) return response.status(400).send({ message: "Unabled to find a user profile" });
+
+  return response.status(200).send({
+    id: foundUser._id,
+    firstName: foundUser.firstName,
+    lastName: foundUser.lastName,
+    email: foundUser.email,
+    balance: foundUser.balance.current,
+    carry: foundUser.balance.carry.filter((carry) => !carry.isAccepted && !carry.isRejected && !carry.isRecalled),
+    isAdmin: foundUser.isAdmin,
+    isTeller: foundUser.isTeller,
+  });
 };
 
 const editProfile = async (request: Request, response: Response) => {
-  response.status(200).send("profile");
+  const updates = Object.keys(request.body);
+  const allowedToBeUpdate = ["firstName", "lastName", "address"];
+  const { firstName, lastName, address } = request.body;
+  const isValidOperation = updates.every((update) => allowedToBeUpdate.includes(update));
+
+  if (!request.user) return response.status(400).send({ message: "Authentication required" });
+
+  if (!isValidOperation) return response.status(400).send({ message: "Invalid updates" });
+
+  const updatedUser = await Users.findOneAndUpdate({ email: request.user }, { firstName, lastName, address }, { new: true, runValidators: true });
+
+  if (!updatedUser) return response.status(400).send({ message: "Unabled to update user profile" });
+
+  return response.status(200).send({ message: "User profile updated." });
 };
 
 const editPassword = async (request: Request, response: Response) => {
   response.status(200).send("profile");
 };
 
-export { welcome, register, verifyCode, resendCode, resetPassword, login, logout, profile, editProfile, editPassword };
+export { profile, editProfile, editPassword };

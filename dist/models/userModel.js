@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -12,9 +35,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Users = void 0;
+exports.Users = exports.comparePassword = exports.hashingPassword = void 0;
 const validator_1 = __importDefault(require("validator"));
-const mongoose_1 = require("mongoose");
+const mongoose_1 = __importStar(require("mongoose"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const sendEmail_1 = require("../middleware/sendEmail");
 // SEND EMAIL
@@ -46,9 +69,48 @@ const hashingPassword = (entredPassword) => __awaiter(void 0, void 0, void 0, fu
     const salt = yield bcrypt_1.default.genSalt(10);
     return yield bcrypt_1.default.hash(entredPassword, salt);
 });
+exports.hashingPassword = hashingPassword;
+const comparePassword = (enteredPassword, passwordToCompareWith) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield bcrypt_1.default.compare(enteredPassword, passwordToCompareWith);
+});
+exports.comparePassword = comparePassword;
 const UserSchema = new mongoose_1.Schema({
     firstName: { type: String, trim: true },
     lastName: { type: String, trim: true },
+    address: { type: String, trim: true },
+    balance: {
+        current: { type: Number, trim: true, default: 10000 },
+        carry: [
+            {
+                id: { type: String, trim: true },
+                description: { type: String, trim: true },
+                type: { type: String, trim: true },
+                account: { type: mongoose_1.default.Types.ObjectId },
+                amount: { type: Number, trim: true },
+                isAccepted: { type: Boolean, trim: true, default: false },
+                isRejected: { type: Boolean, trim: true, default: false },
+                isRecalled: { type: Boolean, trim: true, default: false },
+                sentDate: { type: Date, trim: true, required: true },
+                acceptedDate: { type: Date || null, trim: true },
+            },
+        ],
+        operations: [
+            {
+                id: { type: String, trim: true },
+                description: { type: String, trim: true },
+                type: { type: String, trim: true },
+                account: {
+                    type: mongoose_1.default.Types.ObjectId,
+                    trim: true,
+                },
+                amount: { type: Number, trim: true },
+                isAccepted: { type: Boolean, trim: true, default: false },
+                isRejected: { type: Boolean, trim: true, default: false },
+                isRecalled: { type: Boolean, trim: true, default: false },
+                date: { type: Date, trim: true, required: true },
+            },
+        ],
+    },
     email: {
         type: String,
         trim: true,
@@ -71,6 +133,7 @@ const UserSchema = new mongoose_1.Schema({
         },
     },
     isAdmin: { type: Boolean, default: false },
+    isTeller: { type: Boolean, default: false },
     isActivated: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     verificationCode: {
@@ -79,18 +142,10 @@ const UserSchema = new mongoose_1.Schema({
     },
 }, { timestamps: true });
 // ! send email
-UserSchema.static("sendEmail", (email, { code, expiredOn }) => __awaiter(void 0, void 0, void 0, function* () {
-    if (yield exports.Users.find({ email })) {
-        sendingEmail(email, code);
-        yield exports.Users.updateOne({ email, verificationCode: { code, expiredOn } });
-        return { statusCode: 200, message: "Code has been sent successfully." };
-    }
-    else
-        return { statusCode: 400, message: "User does not exist." };
-}));
+UserSchema.static("sendEmail", (email, { code }) => __awaiter(void 0, void 0, void 0, function* () { return sendingEmail(email, code); }));
 // ! reset password
 UserSchema.static("resetPassword", (email, password) => __awaiter(void 0, void 0, void 0, function* () {
-    yield exports.Users.updateOne({ email, password: yield hashingPassword(password) });
+    yield exports.Users.findOneAndUpdate({ email, isVerified: true }, { password: yield (0, exports.hashingPassword)(password), verificationCode: null });
     return { statusCode: 200, message: "Password reset" };
 }));
 // ! after saving a user
@@ -102,7 +157,7 @@ UserSchema.pre("save", function (next) {
             if (!this.isModified("password")) {
                 next();
             }
-            this.password = yield hashingPassword((_a = this.password) !== null && _a !== void 0 ? _a : "");
+            this.password = yield (0, exports.hashingPassword)((_a = this.password) !== null && _a !== void 0 ? _a : "");
             next();
         }
         catch (error) {
@@ -123,4 +178,5 @@ UserSchema.post("save", function (doc, next) {
         }
     });
 });
+// UserSchema.plugin(passportLocalMongoose);
 exports.Users = (0, mongoose_1.model)("User", UserSchema);

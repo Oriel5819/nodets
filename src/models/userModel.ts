@@ -1,5 +1,5 @@
 import validator from "validator";
-import { model, Schema, Model, PassportLocalDocument, PassportLocalModel } from "mongoose";
+import mongoose, { model, Schema, Model, PassportLocalDocument, PassportLocalModel } from "mongoose";
 import passportLocalMongoose from "passport-local-mongoose";
 import bcrypt from "bcrypt";
 import { transporter } from "../middleware/sendEmail";
@@ -35,15 +35,53 @@ const sendingEmail = (email: string, code: string) => {
 };
 
 // ! hashing password
-const hashingPassword = async (entredPassword: string) => {
+export const hashingPassword = async (entredPassword: string) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(entredPassword, salt);
+};
+
+export const comparePassword = async (enteredPassword: string, passwordToCompareWith: string) => {
+  return await bcrypt.compare(enteredPassword, passwordToCompareWith);
 };
 
 const UserSchema = new Schema(
   {
     firstName: { type: String, trim: true },
     lastName: { type: String, trim: true },
+    address: { type: String, trim: true },
+    balance: {
+      current: { type: Number, trim: true, default: 10000 },
+      carry: [
+        {
+          id: { type: String, trim: true },
+          description: { type: String, trim: true },
+          type: { type: String, trim: true },
+          account: { type: mongoose.Types.ObjectId },
+          amount: { type: Number, trim: true },
+          isAccepted: { type: Boolean, trim: true, default: false },
+          isRejected: { type: Boolean, trim: true, default: false },
+          isRecalled: { type: Boolean, trim: true, default: false },
+          sentDate: { type: Date, trim: true, required: true },
+          acceptedDate: { type: Date || null, trim: true },
+        },
+      ],
+      operations: [
+        {
+          id: { type: String, trim: true },
+          description: { type: String, trim: true },
+          type: { type: String, trim: true },
+          account: {
+            type: mongoose.Types.ObjectId,
+            trim: true,
+          },
+          amount: { type: Number, trim: true },
+          isAccepted: { type: Boolean, trim: true, default: false },
+          isRejected: { type: Boolean, trim: true, default: false },
+          isRecalled: { type: Boolean, trim: true, default: false },
+          date: { type: Date, trim: true, required: true },
+        },
+      ],
+    },
     email: {
       type: String,
       trim: true,
@@ -64,6 +102,7 @@ const UserSchema = new Schema(
       },
     },
     isAdmin: { type: Boolean, default: false },
+    isTeller: { type: Boolean, default: false },
     isActivated: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     verificationCode: {
@@ -75,18 +114,11 @@ const UserSchema = new Schema(
 );
 
 // ! send email
-UserSchema.static("sendEmail", async (email: string, { code, expiredOn }) => {
-  if (await Users.find({ email })) {
-    sendingEmail(email, code);
-    await Users.updateOne({ email, verificationCode: { code, expiredOn } });
-
-    return { statusCode: 200, message: "Code has been sent successfully." };
-  } else return { statusCode: 400, message: "User does not exist." };
-});
+UserSchema.static("sendEmail", async (email: string, { code }) => sendingEmail(email, code));
 
 // ! reset password
 UserSchema.static("resetPassword", async (email: string, password: string) => {
-  await Users.updateOne({ email, password: await hashingPassword(password) });
+  await Users.findOneAndUpdate({ email, isVerified: true }, { password: await hashingPassword(password), verificationCode: null });
   return { statusCode: 200, message: "Password reset" };
 });
 
