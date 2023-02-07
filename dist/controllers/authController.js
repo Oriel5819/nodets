@@ -17,7 +17,11 @@ const passport_1 = __importDefault(require("passport"));
 const authService_1 = require("../services/authService");
 const register = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password, confirmPassword } = request.body;
-    const { statusCode, message } = yield (0, authService_1.registerService)({ email, password, confirmPassword });
+    const { statusCode, message } = yield (0, authService_1.registerService)({
+        email,
+        password,
+        confirmPassword,
+    });
     response.status(statusCode).send({ message });
 });
 exports.register = register;
@@ -35,21 +39,42 @@ const resendCode = (request, response) => __awaiter(void 0, void 0, void 0, func
 exports.resendCode = resendCode;
 const resetPassword = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, resetCode, password, confirmPassword } = request.body;
-    const { statusCode, message } = yield (0, authService_1.resetPasswordService)({ email, resetCode, password, confirmPassword });
+    const { statusCode, message } = yield (0, authService_1.resetPasswordService)({
+        email,
+        resetCode,
+        password,
+        confirmPassword,
+    });
     response.status(statusCode).send({ message });
 });
 exports.resetPassword = resetPassword;
-const login = (request, response, next) => passport_1.default.authenticate("local", function (error, user, info) {
-    if (error)
-        return next(error);
-    if (!user)
-        return response.send({ message: info.message });
-    request.logIn(user, (error) => {
-        if (error)
-            next(error);
-        response.status(200).send({ message: "User logged in." });
-    });
-})(request, response, next);
+const login = (request, response, next) => {
+    try {
+        passport_1.default.authenticate("local", function (error, user, info) {
+            if (error)
+                return next(error);
+            if (!user)
+                return response.send({ message: info.message });
+            request.logIn(user, (error) => {
+                if (error)
+                    next(error);
+                response.status(200).send({
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    balance: user.balance.current,
+                    email: user.email,
+                    isActivated: user.isActivated,
+                    isVerified: user.isVerified,
+                    isAdmin: user.isAdmin,
+                    isTeller: user.isTeller,
+                });
+            });
+        })(request, response, next);
+    }
+    catch (error) {
+        next(error);
+    }
+};
 exports.login = login;
 const logout = (request, response, next) => __awaiter(void 0, void 0, void 0, function* () {
     return request.logout((error) => {
