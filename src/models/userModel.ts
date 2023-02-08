@@ -1,5 +1,5 @@
 import validator from "validator";
-import { model, Schema, Model } from "mongoose";
+import { model, Schema, Model, PassportLocalDocument, PassportLocalModel } from "mongoose";
 import passportLocalMongoose from "passport-local-mongoose";
 import bcrypt from "bcrypt";
 import { transporter } from "../middleware/sendEmail";
@@ -114,5 +114,7 @@ UserSchema.post("save", async function (doc, next) {
     next(error);
   }
 });
+
+// UserSchema.plugin(passportLocalMongoose);
 
 export const Users = model<IUser, IUserModel>("User", UserSchema);
