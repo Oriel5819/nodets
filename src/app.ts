@@ -10,6 +10,7 @@ import consola from "consola";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "passport";
+import { Users } from "./models/userModel";
 
 import { userRoute } from "./routes/userRoute";
 import { operationRoute } from "./routes/operationRoute";
@@ -37,6 +38,8 @@ app.set("view engine", "ejs");
 
 // CONNECT TO MONGODB
 mongodbConnect(MONGO_URI ?? "");
+
+// PASSPORT
 
 // ROUTES
 app.use("/", (request: Request, response: Response) => response.render("index"));
